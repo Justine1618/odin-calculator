@@ -1,0 +1,38 @@
+.bodyContainer {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.calcBody {
+    width: 70vw;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid black;
+}
+
+.screen {
+    width: 60vw;
+    height: auto;
+    margin: 16px;
+    padding: 8px;
+    background-color: lightgray;
+    border: 1px solid black;
+}
+
+.buttonContainer {
+    display: grid;
+    grid-template-columns: 15vw 15vw 15vw 15vw;
+    grid-template-rows: 15vh 15vh 15vh 15vh 15vh;
+    margin: 16px;
+    padding: 8px;
+}
+
+button {
+    margin: 2px;
+    padding: 4px;
+}
