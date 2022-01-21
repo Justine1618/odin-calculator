@@ -17,11 +17,13 @@
 
 .screen {
     width: 60vw;
-    height: auto;
+    height: 24px;
     margin: 16px;
     padding: 8px;
     background-color: lightgray;
     border: 1px solid black;
+    display: flex;
+    align-items: center;
 }
 
 .buttonContainer {

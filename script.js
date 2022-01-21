@@ -1,4 +1,10 @@
 function Clicked(event) {
+    if(event.target.textContent == 'CE')
+    {
+        screenText = '';
+        screen.textContent = screenText;
+        return;
+    }
     screenText += event.target.textContent;
     screen.textContent = screenText;
 }
