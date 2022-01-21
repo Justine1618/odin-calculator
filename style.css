@@ -15,7 +15,7 @@
     border: 2px solid black;
 }
 
-.screen {
+#screen {
     width: 60vw;
     height: 24px;
     margin: 16px;
