@@ -2,6 +2,11 @@
 //Only handle integers for now, will deal with floats later
 function ClickedNum(event) {
     let temp = parseInt(event.target.textContent);
+    if (currentNum == null) {
+        currentNum = temp;
+        DisplayText();
+        return;
+    }
     currentNum *= 10;
     currentNum += temp;
     DisplayText();
@@ -10,19 +15,24 @@ function ClickedNum(event) {
 function ClickedOp(event) {
     //Can only add an op if there is a number for it to act on
     //This breaks parenthesis, but they will be handled specially anyways
-    if (currentNum != 0) {
+    //However, it correctly displays and error if more than one operator is pressed in a row
+    if (currentNum != null) {
         nums.push(currentNum);
     }
-    currentNum = 0;
+    currentNum = null;
     ops.push(event.target.textContent);
     DisplayText();
 }
 
-function ClearAll(event) {
+function ClickedClearAll(event) {
     nums = [];
     ops = [];
-    currentNum = 0;
+    currentNum = null;
     DisplayText();
+}
+
+function ClickedEquals(event) {
+    
 }
 
 function DisplayText() {
@@ -38,7 +48,7 @@ function DisplayText() {
         temp += ops[i];
         temp += ' ';
     }
-    if (currentNum != 0) {
+    if (currentNum != null) {
         temp += currentNum.toString();
     }
     screen.textContent = temp;
@@ -53,9 +63,11 @@ const numButtons = document.querySelectorAll('.num');
 const opButtons = document.querySelectorAll('.op');
 const screen = document.querySelector('#screen');
 const clear = document.querySelector('#clear');
+const equals = document.querySelector('#equals')
 
 numButtons.forEach(item => { item.addEventListener('click', ClickedNum) })
 opButtons.forEach(item => { item.addEventListener('click', ClickedOp) })
-clear.addEventListener('click', ClearAll);
+clear.addEventListener('click', ClickedClearAll);
+equals.addEventListener('click', ClickedEquals);
 
 DisplayText();
