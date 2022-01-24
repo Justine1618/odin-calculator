@@ -36,6 +36,12 @@ function ClickedClearAll(event) {
     DisplayText();
 }
 
+function ClickedPlusMinus(event) {
+    if (currentNum != null) {
+        currentNum = 0 - Number(currentNum);
+    }
+    DisplayText();
+}
 
 //The equals button should scan the current lest of numbers and operations, applying ops to the numbers
 //At the same index, and at index +1. Numbers will be replaced with the result and op will be removed
@@ -51,7 +57,95 @@ function ClickedEquals(event) {
         screen.textContent = 'Syntax Error, expression must end in a number';
         return;
     }
+    nums.push(currentNum);
+    let result = evaluateExpression(nums, ops);
+    if(result == null) {
+        screen.textContent = "Error, unable to compute expression";
+        return;
+    }
+    ops = [];
+    nums = [];
+    currentNum = result;
+    DisplayText();
+    return;
 
+}
+
+function evaluateExpression(currentNums, currentOps) {
+    if (currentOps.length == 0) {
+        return currentNums;
+    }
+
+    //This pursposefully has a for loop for each operator. This maintains order of operations.
+    //looping backwards because the function removes items from the list
+    for (let i = currentOps.length - 1; i >= 0; i--) {
+        if (currentOps[i] == '.') {
+            currentNums.splice(i, 2, decimalOp(currentNums[i], currentNums[i + 1]));
+            currentOps.splice(i, 1);
+        }
+    }
+
+    for (let i = currentOps.length - 1; i >= 0; i--) {
+        if (currentOps[i] == 'x') {
+            currentNums.splice(i, 2, multOp(currentNums[i], currentNums[i + 1]));
+            currentOps.splice(i, 1);
+        }
+    }
+
+    for (let i = currentOps.length - 1; i >= 0; i--) {
+        if (currentOps[i] == "&divide;") {
+            currentNums.splice(i, 2, divOp(currentNums[i], currentNums[i + 1]));
+            currentOps.splice(i, 1);
+        }
+    }
+
+    for (let i = currentOps.length - 1; i >= 0; i--) {
+        if (currentOps[i] == '+') {
+            currentNums.splice(i, 2, addOp(currentNums[i], currentNums[i + 1]));
+            currentOps.splice(i, 1);
+        }
+    }
+
+    for (let i = currentOps.length - 1; i >= 0; i--) {
+        if (currentOps[i] == '-') {
+            currentNums.splice(i, 2, subOp(currentNums[i], currentNums[i + 1]));
+            currentOps.splice(i, 1);
+        }
+    }
+
+    if (currentNums.length != 1) {
+        console.log("Incorrect evaluation, more than one number entry remaining");
+        return null;
+    }
+
+    return currentNums[0];
+
+}
+
+//Each operation will be take two strings of integers, or floats. It wll return a float
+
+//might only pass strings into the decimal op, because that is the only one that needs to preserve leading zeroes.
+function decimalOp(a, b) {
+    //We save the length of the mantissa so that we can divide by the proper power of ten to put the decimal in the correct place
+    //This will preserve leading zeroes that will be lost upoon conversion to a number instead of a string
+    let decimalLength = -b.length;
+    return Number(a) + Number(b) * (10 ** decimalLength)
+}
+
+function multOp(a, b) {
+    return Number(a) * Number(b);
+}
+
+function divOp(a, b) {
+    return Number(a) / Number(b);
+}
+
+function addOp(a, b) {
+    return Number(a) + Number(b);
+}
+
+function subOp(a, b) {
+    return Number(a) - Number(b);
 }
 
 function DisplayText() {
@@ -66,9 +160,8 @@ function DisplayText() {
     }
     for (let i = 0; i < nums.length; i++) {
         temp += nums[i];
-        temp += ' ';
         temp += ops[i];
-        temp += ' ';
+
     }
     if (currentNum != null) {
         temp += currentNum;
@@ -86,10 +179,12 @@ const opButtons = document.querySelectorAll('.op');
 const screen = document.querySelector('#screen');
 const clear = document.querySelector('#clear');
 const equals = document.querySelector('#equals')
+const plusMinus = document.querySelector('#plusMinus');
 
 numButtons.forEach(item => { item.addEventListener('click', ClickedNum) })
 opButtons.forEach(item => { item.addEventListener('click', ClickedOp) })
 clear.addEventListener('click', ClickedClearAll);
 equals.addEventListener('click', ClickedEquals);
+plusMinus.addEventListener('click', ClickedPlusMinus);
 
 DisplayText();
