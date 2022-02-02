@@ -63,9 +63,15 @@ function ClickedPlusMinus(event) {
 //Multiplication and Division
 //Addition and Substraction
 function ClickedEquals(event) {
+    //Don't want to throw an error for ending on a decimal, just add an invisible 0
     if (currentNum == null) {
-        screen.textContent = 'Syntax Error, expression must end in a number';
-        return;
+        if (ops[ops.length - 1] == ".") {
+            currentNum = '0';
+        }
+        else {
+            screen.textContent = 'Syntax Error, expression must end in a number';
+            return;
+        }
     }
     nums.push(currentNum);
     let result = evaluateExpression(nums, ops);
