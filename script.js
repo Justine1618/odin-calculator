@@ -1,5 +1,4 @@
 
-//Only handle integers for now, will deal with floats later
 function ClickedNum(event) {
     //Could convert to an int here and track integers
     //This leads to problems of dropping leading zeroes after a decimal place that should be displayed
@@ -20,7 +19,13 @@ function ClickedOp(event) {
     //Can only add an op if there is a number for it to act on
     //This breaks parenthesis, but they will be handled specially anyways
     //However, it correctly displays and error if more than one operator is pressed in a row
-    //Adding two decimal operators to a single number should throw an error, but currently does not. Can check during op evaluation
+    if (ops[ops.length - 1] == ".") {
+
+        if (event.target.textContent == ".") {
+            screen.textContent = 'Error, cannot have more than one decimal per number';
+            return;
+        }
+    }
     if (currentNum != null) {
         nums.push(currentNum);
     }
@@ -37,7 +42,12 @@ function ClickedClearAll(event) {
 }
 
 function ClickedPlusMinus(event) {
-    if (currentNum != null) {
+    //If the previos operator is a decimal, we want to change the sign of the whole number part and 
+    //leave the decimal part alone
+    if (ops[ops.length - 1] == ".") {
+        nums[nums.length - 1] = 0 - nums[nums.length - 1];
+    }
+    else if (currentNum != null) {
         currentNum = 0 - Number(currentNum);
     }
     DisplayText();
@@ -59,7 +69,7 @@ function ClickedEquals(event) {
     }
     nums.push(currentNum);
     let result = evaluateExpression(nums, ops);
-    if(result == null) {
+    if (result == null) {
         screen.textContent = "Error, unable to compute expression";
         return;
     }
@@ -126,10 +136,18 @@ function evaluateExpression(currentNums, currentOps) {
 
 //might only pass strings into the decimal op, because that is the only one that needs to preserve leading zeroes.
 function decimalOp(a, b) {
-    //We save the length of the mantissa so that we can divide by the proper power of ten to put the decimal in the correct place
+    //We save the length of the decimal part so that we can divide by the proper power of ten to put the decimal in the correct place
     //This will preserve leading zeroes that will be lost upoon conversion to a number instead of a string
+
+    //We can't just add the decimal part, we need to do the same as the sign of the whole number
+    //This prevents wrong arithmatic with negative numbers
     let decimalLength = -b.length;
-    return Number(a) + Number(b) * (10 ** decimalLength)
+    if (Number(a) >= 0) {
+        return Number(a) + Number(b) * (10 ** decimalLength);
+    }
+    else {
+        return Number(a) - Number(b) * (10 ** decimalLength);
+    }
 }
 
 function multOp(a, b) {
@@ -169,11 +187,12 @@ function DisplayText() {
     screen.textContent = temp;
 }
 
+//Global Variables
 let currentNum = null;
 let nums = [];
 let ops = [];
 
-
+//DOM elements
 const numButtons = document.querySelectorAll('.num');
 const opButtons = document.querySelectorAll('.op');
 const screen = document.querySelector('#screen');
@@ -181,10 +200,12 @@ const clear = document.querySelector('#clear');
 const equals = document.querySelector('#equals')
 const plusMinus = document.querySelector('#plusMinus');
 
+//Event Listeners
 numButtons.forEach(item => { item.addEventListener('click', ClickedNum) })
 opButtons.forEach(item => { item.addEventListener('click', ClickedOp) })
 clear.addEventListener('click', ClickedClearAll);
 equals.addEventListener('click', ClickedEquals);
 plusMinus.addEventListener('click', ClickedPlusMinus);
 
+//Display startup
 DisplayText();
