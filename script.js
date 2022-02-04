@@ -109,7 +109,8 @@ function evaluateExpression(currentNums, currentOps) {
     }
 
     for (let i = currentOps.length - 1; i >= 0; i--) {
-        if (currentOps[i] == "&divide;") {
+        //I copied and pasted the divide symbol from the console.
+        if (currentOps[i] == "÷") {
             currentNums.splice(i, 2, divOp(currentNums[i], currentNums[i + 1]));
             currentOps.splice(i, 1);
         }
