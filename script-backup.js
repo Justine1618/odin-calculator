@@ -88,6 +88,7 @@ function ClickedEquals(event) {
 }
 
 function evaluateExpression(currentNums, currentOps) {
+    //Nums is one longer than ops, stop early
     if (currentOps.length == 0) {
         return currentNums;
     }

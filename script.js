@@ -1,3 +1,29 @@
+// I figured out how to do parenthesis and dont want to forget
+// When an opening parenthesis is pressed, a function stores the state in a list
+// and then replaces it with a blank state.
+// A closing parenthesis will then replace the state with the previous state in the list.
+// Execution will execute the states from last to first
+
+// Problems: This method doesn't allow for two sets of parenthesis.
+// Potential solution: Do some more processing in the closing parenthesis step to execute what is in parens
+// Potential solution: Have each state object contain a pointer to previous states, allowing more than one
+// Chosen solution: Parens always evaluate to a number not an operator
+// thus they can be listed in the numbers list.
+// The numbers list can contain a number, in which case the next operator is applied to it.
+// Or, it can contain a parens object, in which case the parens object must be executed
+
+// opening a parenthesis creates a new state and stores it in a list
+// as many states as needed can be created this way.
+// A closing parens takes the current state and stores it as an entry in the nums list of the previous state
+// the next button must be an operator other than . or +- (maybe)
+// Can store the paren object in nums list, and stor 'paren' in teh currentNum
+// This will let you filter for the special circumstance of ending in a parens, which will be special
+// anyways because we will need to account for pressing enter before entering enough end parens
+
+
+
+
+
 /**
  * Event listener attached to numbers.
  * Concats the number being pressed to the string of the current number
