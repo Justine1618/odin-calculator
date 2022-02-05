@@ -111,6 +111,39 @@ function ClickedPlusMinus(event, currentState) {
     DisplayText(currentState);
 }
 
+/**
+ * Stores the current state in the stateListm, and sets current state to blank.
+ * 
+ * @param {event} event 
+ * @param {*} currentState 
+ * @param {*} stateList 
+ */
+
+function ClickedLParen(event, currentState, stateList) {
+    stateList.push({...currentState});
+    ClickedClearAll(currentState);
+    //Don't need to display screen, clear does that for me
+}
+
+/**
+ * Stores the current state as an entry in the nums list of the next most lowest state.
+ * 
+ * @param {*} event 
+ * @param {*} currentState 
+ * @param {*} stateList 
+ * @returns 
+ */
+
+function ClickedRParen(event, currentState, stateList) {
+    // Need to implement
+    return;
+}
+
+function ClickedEquals(event, currentState, stateList) {
+    // Need to implement
+    return;
+}
+
 function DisplayText({nums, ops, currentNum}) {
     let temp = '';
 
@@ -132,20 +165,27 @@ const numButtons = document.querySelectorAll('.num');
 const opButtons = document.querySelectorAll('.op');
 const screen = document.querySelector('#screen');
 const clear = document.querySelector('#clear');
-const equals = document.querySelector('#equals')
 const plusMinus = document.querySelector('#plusMinus');
+const lParen = document.querySelector('#lParen');
+const rParen = document.querySelector('#rParen');
+const equals = document.querySelector('#equals')
+
 
 //Event Listeners
 numButtons.forEach(item => { item.addEventListener('click', (event) => {ClickedNum(event, state)})});
 opButtons.forEach(item => { item.addEventListener('click', (event) => {ClickedOp(event, state)})});
 clear.addEventListener('click', (event) => {ClickedClearAll(event, state)});
 plusMinus.addEventListener('click', (event) => {ClickedPlusMinus(event, state)});
-//equals.addEventListener('click', ClickedEquals);
+lParen.addEventListener('click', (event) => {ClickedLParen(event, state, stateList)});
+rParen.addEventListener('click', (event) => {ClickedRParen(event, state, stateList)});
+equals.addEventListener('click', (event) => {ClickedEquals(event, currentState, stateList)});
 
+// Global Variables
 let state = {
     currentNum: null,
     nums: [],
     ops: []
 }
+let stateList = [];
 
 DisplayText(state);
