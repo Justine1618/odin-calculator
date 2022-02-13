@@ -39,7 +39,7 @@ function ClickedNum(event, currentState) {
     if (currentState.currentNum == null) currentState.currentNum = event.target.textContent;
     else currentState.currentNum += event.target.textContent;
 
-    DisplayText(state);
+    DisplayText(stateList);
 }
 
 /**
@@ -54,7 +54,7 @@ function ClickedNum(event, currentState) {
 
 function ClickedOp(event, currentState) {
     //If the last op pressed is a decimal, we can't have another decimal in until we see another op
-    if ((currentState.ops[currentState.ops.length-1] == '.') && (event.target.textContent == '.')) {
+    if ((currentState.ops[currentState.ops.length - 1] == '.') && (event.target.textContent == '.')) {
         console.log('Cannot have more than one decimal per number');
         return;
     }
@@ -74,7 +74,7 @@ function ClickedOp(event, currentState) {
     currentState.ops.push(event.target.textContent);
     currentState.currentNum = null;
 
-    DisplayText(state);
+    DisplayText(stateList);
 }
 
 /**
@@ -83,12 +83,16 @@ function ClickedOp(event, currentState) {
  * @param {object} currentState 
  */
 
-function ClickedClearAll(event, currentState) {
-    currentState.currentNum = null;
-    currentState.nums = [];
-    currentState.ops = [];
+function ClickedClearAll(event, stateList) {
+    let blank = {
+        currentNum: null,
+        nums: [],
+        ops: []
+    };
+    stateList.splice(0, stateList.length);
+    stateList.push(blank);
 
-    DisplayText(state);
+    DisplayText(stateList);
 }
 
 /**
@@ -99,16 +103,16 @@ function ClickedClearAll(event, currentState) {
  */
 
 function ClickedPlusMinus(event, currentState) {
-    if(currentState.ops[currentState.ops.length-1] == '.') {
-        let temp = 0 - Number(currentState.nums[currentState.nums.length-1]);
-        currentState.nums[currentState.nums.length-1] = temp.toString();
+    if (currentState.ops[currentState.ops.length - 1] == '.') {
+        let temp = 0 - Number(currentState.nums[currentState.nums.length - 1]);
+        currentState.nums[currentState.nums.length - 1] = temp.toString();
     }
     else if (currentState.currentNum != null) {
         temp = 0 - Number(currentState.currentNum);
         currentState.currentNum = temp.toString();
     }
 
-    DisplayText(currentState);
+    DisplayText(stateList);
 }
 
 /**
@@ -119,10 +123,14 @@ function ClickedPlusMinus(event, currentState) {
  * @param {*} stateList 
  */
 
-function ClickedLParen(event, currentState, stateList) {
-    stateList.push({...currentState});
-    ClickedClearAll(currentState);
-    //Don't need to display screen, clear does that for me
+function ClickedLParen(event, stateList) {
+    let blank = {
+        currentNum: null,
+        nums: [],
+        ops: []
+    };
+    stateList.push(blank);
+    DisplayText(stateList);
 }
 
 /**
@@ -134,9 +142,11 @@ function ClickedLParen(event, currentState, stateList) {
  * @returns 
  */
 
-function ClickedRParen(event, currentState, stateList) {
-    // Need to implement
-    return;
+function ClickedRParen(event, stateList) {
+    let temp = stateList.splice(stateList.length-1, 1);
+    console.log(temp);
+    stateList[stateList.length-1].nums.push(temp);
+    DisplayText(stateList);
 }
 
 function ClickedEquals(event, currentState, stateList) {
@@ -144,18 +154,31 @@ function ClickedEquals(event, currentState, stateList) {
     return;
 }
 
-function DisplayText({nums, ops, currentNum}) {
+function DisplayText(stateList) {
     let temp = '';
-
-    //This will have to be fixed at some point
-    //Will not work with parens 
-    for (let i = 0; i < nums.length; i++) {
-        temp += nums[i];
-        temp += ops[i];
-
-    }
-    if (currentNum != null) {
-        temp += currentNum;
+    console.log(stateList);
+    // Display everything in the stateList
+    for (let i = 0; i < stateList.length; i++) {
+        temp += '(';
+        for (let j = 0; j < stateList[i].nums.length; j++) {
+            if (typeof (stateList[i].nums[j]) == Object) {
+                temp += '(';
+                for (let k = 0; k < stateList[i].nums[j].length; k++) {
+                    temp += stateList[i].nums[j].nums[k];
+                    temp += stateList[i].nums[j].ops[k];
+                }
+                temp += stateList[i].nums[j].currentNum;
+                temp += ')';
+            }
+            else {
+                temp += stateList[i].nums[j];
+                temp += stateList[i].ops[j];
+            }
+        }
+        if (stateList[i].currentNum != null) {
+            temp += stateList[i].currentNum;
+        }
+        temp += ')';
     }
     screen.textContent = temp;
 }
@@ -168,17 +191,17 @@ const clear = document.querySelector('#clear');
 const plusMinus = document.querySelector('#plusMinus');
 const lParen = document.querySelector('#lParen');
 const rParen = document.querySelector('#rParen');
-const equals = document.querySelector('#equals')
+const equals = document.querySelector('#equals');
 
 
 //Event Listeners
-numButtons.forEach(item => { item.addEventListener('click', (event) => {ClickedNum(event, state)})});
-opButtons.forEach(item => { item.addEventListener('click', (event) => {ClickedOp(event, state)})});
-clear.addEventListener('click', (event) => {ClickedClearAll(event, state)});
-plusMinus.addEventListener('click', (event) => {ClickedPlusMinus(event, state)});
-lParen.addEventListener('click', (event) => {ClickedLParen(event, state, stateList)});
-rParen.addEventListener('click', (event) => {ClickedRParen(event, state, stateList)});
-equals.addEventListener('click', (event) => {ClickedEquals(event, currentState, stateList)});
+numButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedNum(event, stateList[stateList.length - 1]) }) });
+opButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedOp(event, stateList[stateList.length - 1]) }) });
+clear.addEventListener('click', (event) => { ClickedClearAll(event, stateList) });
+plusMinus.addEventListener('click', (event) => { ClickedPlusMinus(event, stateList[stateList.length - 1]) });
+lParen.addEventListener('click', (event) => { ClickedLParen(event, stateList) });
+rParen.addEventListener('click', (event) => { ClickedRParen(event, stateList) });
+equals.addEventListener('click', (event) => { ClickedEquals(event, stateList) });
 
 // Global Variables
 let state = {
@@ -187,5 +210,6 @@ let state = {
     ops: []
 }
 let stateList = [];
+stateList.push(state);
 
-DisplayText(state);
+DisplayText(stateList);
