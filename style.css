@@ -51,19 +51,19 @@ button {
     border: black 1px solid;
 }
 
-.num {
+.orange {
     background-color: #ca6702;
 }
 
-.num:hover {
+.orange:hover {
     background-color: #bb3e03;
 }
 
-.op {
+.blue {
     background-color: #005f73;
 }
 
-.op:hover {
+.blue:hover {
     background-color: #001219;
 }
 
