@@ -16,193 +16,98 @@ function ClickedNum(event) {
 }
 
 function ClickedOp(event) {
-    //Can only add an op if there is a number for it to act on
-    //This breaks parenthesis, but they will be handled specially anyways
-    //However, it correctly displays and error if more than one operator is pressed in a row
-    if (ops[ops.length - 1] == ".") {
-
-        if (event.target.textContent == ".") {
-            screen.textContent = 'Error, cannot have more than one decimal per number';
+    //console.log(`Current Number: ${currentNum} Previous Number: ${prevNum} Current Op: ${currentOp}`);
+    // Square root immediately takes the root of whatever is on the screen
+    if (event.target.textContent == '√') {
+        if (currentNum != null) {
+            currentNum = Math.sqrt(Number(currentNum)).toString();
+            DisplayText();
+            return;
+        }
+        else {
+            prevNum = Math.sqrt(Number(prevNum)).toString();
+            DisplayText();
             return;
         }
     }
-    if (currentNum != null) {
-        nums.push(currentNum);
+    if (currentOp != null) {
+        prevNum = EvaluateExpression(prevNum, currentNum, currentOp);
+        currentOp = event.target.textContent;
+        currentNum = null;
     }
-    currentNum = null;
-    ops.push(event.target.textContent);
+    else {
+        currentOp = event.target.textContent;
+        prevNum = currentNum;
+        currentNum = null;
+    }
     DisplayText();
 }
 
 function ClickedClearAll(event) {
-    nums = [];
-    ops = [];
     currentNum = null;
+    prevNum = null;
+    currentOp = null;
+    DisplayText();
+}
+
+function ClickedClear(event) {
+    if (currentNum == null) {
+        ClickedClearAll(event);
+    }
+    else {
+        currentNum = currentNum.slice(0,-1);
+    }
     DisplayText();
 }
 
 function ClickedPlusMinus(event) {
-    //If the previos operator is a decimal, we want to change the sign of the whole number part and 
-    //leave the decimal part alone
-    if (ops[ops.length - 1] == ".") {
-        nums[nums.length - 1] = 0 - nums[nums.length - 1];
-    }
-    else if (currentNum != null) {
-        currentNum = 0 - Number(currentNum);
-    }
+    currentNum = (0-Number(currentNum)).toString();
     DisplayText();
 }
 
-//The equals button should scan the current lest of numbers and operations, applying ops to the numbers
-//At the same index, and at index +1. Numbers will be replaced with the result and op will be removed
-//Numbers and ops are stored as strings, so conversion will be necessary
-//Order of operations will be maintained by checking the list of ops in order of priority
-//Order of Ops
-//Decimal Op - Create a floating point number out of two integers with decimal between
-//Parenthesis - Haven't figured this out yet
-//Multiplication and Division
-//Addition and Substraction
 function ClickedEquals(event) {
-    //Don't want to throw an error for ending on a decimal, just add an invisible 0
-    if (currentNum == null) {
-        if (ops[ops.length - 1] == ".") {
-            currentNum = '0';
-        }
-        else {
-            screen.textContent = 'Syntax Error, expression must end in a number';
-            return;
-        }
-    }
-    nums.push(currentNum);
-    let result = evaluateExpression(nums, ops);
-    if (result == null) {
-        screen.textContent = "Error, unable to compute expression";
-        return;
-    }
-    ops = [];
-    nums = [];
-    currentNum = result;
+    console.log(`Current Number: ${currentNum} Previous Number: ${prevNum} Current Op: ${currentOp}`);
+
+    prevNum = EvaluateExpression(prevNum, currentNum, currentOp);
+    currentNum = null;
     DisplayText();
-    return;
-
 }
 
-function evaluateExpression(currentNums, currentOps) {
-    if (currentOps.length == 0) {
-        return currentNums;
+function EvaluateExpression(num1, num2, op) {
+    if (op == '+') {
+        return (Number(num1) + Number(num2)).toString();;
     }
-
-    //This pursposefully has a for loop for each operator. This maintains order of operations.
-    //looping backwards because the function removes items from the list
-    for (let i = currentOps.length - 1; i >= 0; i--) {
-        if (currentOps[i] == '.') {
-            currentNums.splice(i, 2, decimalOp(currentNums[i], currentNums[i + 1]));
-            currentOps.splice(i, 1);
-        }
+    else if (op == '-') {
+        return (Number(num1) - Number(num2)).toString();
     }
-
-    for (let i = currentOps.length - 1; i >= 0; i--) {
-        if (currentOps[i] == 'x') {
-            currentNums.splice(i, 2, multOp(currentNums[i], currentNums[i + 1]));
-            currentOps.splice(i, 1);
-        }
+    else if (op == 'x') {
+        return (Number(num1) * Number(num2)).toString();
     }
-
-    for (let i = currentOps.length - 1; i >= 0; i--) {
-        //I copied and pasted the divide symbol from the console.
-        if (currentOps[i] == "÷") {
-            currentNums.splice(i, 2, divOp(currentNums[i], currentNums[i + 1]));
-            currentOps.splice(i, 1);
-        }
-    }
-
-    for (let i = currentOps.length - 1; i >= 0; i--) {
-        if (currentOps[i] == '+') {
-            currentNums.splice(i, 2, addOp(currentNums[i], currentNums[i + 1]));
-            currentOps.splice(i, 1);
-        }
-    }
-
-    for (let i = currentOps.length - 1; i >= 0; i--) {
-        if (currentOps[i] == '-') {
-            currentNums.splice(i, 2, subOp(currentNums[i], currentNums[i + 1]));
-            currentOps.splice(i, 1);
-        }
-    }
-
-    if (currentNums.length != 1) {
-        console.log("Incorrect evaluation, more than one number entry remaining");
-        return null;
-    }
-
-    return currentNums[0];
-
-}
-
-//Each operation will be take two strings of integers, or floats. It wll return a float
-
-//might only pass strings into the decimal op, because that is the only one that needs to preserve leading zeroes.
-function decimalOp(a, b) {
-    //We save the length of the decimal part so that we can divide by the proper power of ten to put the decimal in the correct place
-    //This will preserve leading zeroes that will be lost upoon conversion to a number instead of a string
-
-    //We can't just add the decimal part, we need to do the same as the sign of the whole number
-    //This prevents wrong arithmatic with negative numbers
-    let decimalLength = -b.length;
-    if (Number(a) >= 0) {
-        return Number(a) + Number(b) * (10 ** decimalLength);
-    }
-    else {
-        return Number(a) - Number(b) * (10 ** decimalLength);
+    else if (op == '÷') {
+        return (Number(num1) / Number(num2)).toString();
     }
 }
 
-function multOp(a, b) {
-    return Number(a) * Number(b);
-}
-
-function divOp(a, b) {
-    return Number(a) / Number(b);
-}
-
-function addOp(a, b) {
-    return Number(a) + Number(b);
-}
-
-function subOp(a, b) {
-    return Number(a) - Number(b);
-}
 
 function DisplayText() {
-    let temp = ''
-    if (nums.length != ops.length) {
-        if (nums.length == 0) {
-            screen.textContent = 'Error, expression must start with a number';
-            return;
-        }
-        screen.textContent = 'Error, expression cannot contain consecutive operators';
-        return;
-    }
-    for (let i = 0; i < nums.length; i++) {
-        temp += nums[i];
-        temp += ops[i];
-
-    }
     if (currentNum != null) {
-        temp += currentNum;
+        screen.textContent = currentNum;
     }
-    screen.textContent = temp;
+    else {
+        screen.textContent = prevNum;
+    }
 }
 
 //Global Variables
 let currentNum = null;
-let nums = [];
-let ops = [];
+let prevNum = null;
+let currentOp = null;
 
 //DOM elements
 const numButtons = document.querySelectorAll('.num');
 const opButtons = document.querySelectorAll('.op');
 const screen = document.querySelector('#screen');
+const clearAll = document.querySelector('#clearAll');
 const clear = document.querySelector('#clear');
 const equals = document.querySelector('#equals')
 const plusMinus = document.querySelector('#plusMinus');
@@ -210,7 +115,9 @@ const plusMinus = document.querySelector('#plusMinus');
 //Event Listeners
 numButtons.forEach(item => { item.addEventListener('click', ClickedNum) })
 opButtons.forEach(item => { item.addEventListener('click', ClickedOp) })
-clear.addEventListener('click', ClickedClearAll);
+clearAll.addEventListener('click', ClickedClearAll);
+clear.addEventListener('click', ClickedClear);
+
 equals.addEventListener('click', ClickedEquals);
 plusMinus.addEventListener('click', ClickedPlusMinus);
 
