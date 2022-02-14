@@ -45,7 +45,7 @@ function ClickedNum(event, currentState) {
     }
     else currentState.currentNum += event.target.textContent;
 
-    DisplayText(stateList);
+    DisplayText(currentState);
 }
 
 /**
@@ -73,6 +73,11 @@ function ClickedOp(event, currentState) {
             if (currentState.ops[currentState.ops.length - 1] == '.') {
                 currentState.currentNum = '0';
             }
+            else if (currentState.ops[currentState.ops.length-1] == ')') {
+                currentState.ops.push(event.target.textContent);
+                DisplayText(currentState);
+                return;
+            }
             else {
                 console.log('Cannot use an operation with an  operator');
                 return;
@@ -82,7 +87,7 @@ function ClickedOp(event, currentState) {
         currentState.nums.push(currentState.currentNum);
         currentState.ops.push(event.target.textContent);
         currentState.currentNum = null;
-        DisplayText(stateList);
+        DisplayText(currentState);
         return;
     }
     else {
@@ -98,6 +103,7 @@ function ClickedOp(event, currentState) {
                 currentState.currentNum = null
             }
             currentState.ops.push('(');
+            DisplayText(currentState);
             // currentNum is now null in all cases, and we have pushed a parens into the ops list.
         }
         else {
@@ -114,7 +120,7 @@ function ClickedOp(event, currentState) {
             currentState.nums.push(currentState.currentNum);
             currentState.ops.push(')');
             currentState.currentNum = null;
-            DisplayText(stateList);
+            DisplayText(currentState);
         }
     }
 }
@@ -125,16 +131,13 @@ function ClickedOp(event, currentState) {
  * @param {object} currentState 
  */
 
-function ClickedClearAll(event, stateList) {
-    let blank = {
-        currentNum: null,
-        nums: [],
-        ops: []
-    };
-    stateList.splice(0, stateList.length);
-    stateList.push(blank);
+function ClickedClearAll(event, currentState) {
+    currentState.currentNum = null;
+    currentState.nums = [];
+    currentState.ops = [];
 
-    DisplayText(stateList);
+
+    DisplayText(currentState);
 }
 
 /**
@@ -154,7 +157,7 @@ function ClickedPlusMinus(event, currentState) {
         currentState.currentNum = temp.toString();
     }
 
-    DisplayText(stateList);
+    DisplayText(currentState);
 }
 
 /**
@@ -165,7 +168,7 @@ function ClickedPlusMinus(event, currentState) {
  * @param {*} stateList 
  */
 
-function ClickedLParen(event, stateList) {
+function ClickedLParen(event, currentState) {
     ClickedOp(event, currentState);
     /*
     let blank = {
@@ -213,7 +216,8 @@ function DisplayText(state) {
     let temp = '';
 
     
-    let opsCopy = [...state.ops];
+    screen.textContent = DisplayTextHelper(state, temp);
+    
 
 
 
@@ -249,6 +253,29 @@ function DisplayText(state) {
     */
 }
 
+function DisplayTextHelper(state, text) {
+    // This is where the bug is.
+    // We can't get to zero length for nums, we are instead undefined.
+    if (state.nums.length == 0) {
+        if (state.currentNum != null)
+            return text + state.currentNum;
+        else
+            return text;
+    }
+    [curOp, ...restOps] = state.ops;
+    if (curOp == '(') {
+        console.log('printing paren');
+        return DisplayTextHelper({currentNum: state.currentNum, nums: state.nums, ops: restOps}, text + '(');
+    }
+    [curNum, ...restNums] = state.nums;
+    text += curNum;
+    if (curOp == ')') {
+        return DisplayTextHelper({currentNum: state.currentNum, nums: restNums, ops: restOps}, text + ')');
+    }
+    text += curOp;
+    return DisplayTextHelper({currentNum: state.currentNum, nums: restNums, ops: restOps}, text);
+}
+
 //DOM elements
 const numButtons = document.querySelectorAll('.num');
 const opButtons = document.querySelectorAll('.op');
@@ -261,13 +288,13 @@ const equals = document.querySelector('#equals');
 
 
 //Event Listeners
-numButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedNum(event, stateList[stateList.length - 1]) }) });
-opButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedOp(event, stateList[stateList.length - 1]) }) });
-clear.addEventListener('click', (event) => { ClickedClearAll(event, stateList) });
-plusMinus.addEventListener('click', (event) => { ClickedPlusMinus(event, stateList[stateList.length - 1]) });
-lParen.addEventListener('click', (event) => { ClickedLParen(event, stateList) });
-rParen.addEventListener('click', (event) => { ClickedRParen(event, stateList) });
-equals.addEventListener('click', (event) => { ClickedEquals(event, stateList) });
+numButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedNum(event, state) }) });
+opButtons.forEach(item => { item.addEventListener('click', (event) => { ClickedOp(event, state) }) });
+clear.addEventListener('click', (event) => { ClickedClearAll(event, state) });
+plusMinus.addEventListener('click', (event) => { ClickedPlusMinus(event, state) });
+lParen.addEventListener('click', (event) => { ClickedLParen(event, state) });
+rParen.addEventListener('click', (event) => { ClickedRParen(event, state) });
+equals.addEventListener('click', (event) => { ClickedEquals(event, state) });
 
 // Global Variables
 let state = {
@@ -275,7 +302,6 @@ let state = {
     nums: [],
     ops: []
 }
-let stateList = [];
-stateList.push(state);
 
-DisplayText(stateList);
+
+DisplayText(state);
