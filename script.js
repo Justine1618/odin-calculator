@@ -36,7 +36,13 @@
  */
 
 function ClickedNum(event, currentState) {
-    if (currentState.currentNum == null) currentState.currentNum = event.target.textContent;
+    if (currentState.currentNum == null) {
+        // Imply multiplication if a number is entered after a parenthesis
+        if(currentState.ops[currentState.ops.length-1] == ')') {
+            currentState.ops.push('x');
+        }
+        currentState.currentNum = event.target.textContent;
+    }
     else currentState.currentNum += event.target.textContent;
 
     DisplayText(stateList);
@@ -59,22 +65,58 @@ function ClickedOp(event, currentState) {
         return;
     }
 
-    //This will need to be changed when incorporation parens, or parens might not be an operator
-    if (currentState.currentNum == null) {
-        if (currentState.ops[currentState.ops.length - 1] == '.') {
-            currentState.currentNum = '0';
+    // Treat parens and non parens separately
+    if (!(event.target.textContent == '(' || event.target.textContent == ')')) {
+        // If the currentNum is null, we are either at the start, or just had an operator, and we can either set the currentNUm
+        // to 0 if we just had a decimal, or ignore the input otherwise
+        if (currentState.currentNum == null) {
+            if (currentState.ops[currentState.ops.length - 1] == '.') {
+                currentState.currentNum = '0';
+            }
+            else {
+                console.log('Cannot use an operation with an  operator');
+                return;
+            }
+        }
+        // Will not push a null because we returned if currentNum is null, or set it to zero
+        currentState.nums.push(currentState.currentNum);
+        currentState.ops.push(event.target.textContent);
+        currentState.currentNum = null;
+        DisplayText(stateList);
+        return;
+    }
+    else {
+        // Assume multiplication if a number is next to a parenthesis
+        // CurrentNum == null implies that the last button pressed is an op, not a number
+        if (event.target.textContent == '(') {
+            if (currentState.currentNum == null && currentState.ops[currentState.ops.length-1] == '.') {
+                currentState.currentNum = 0;
+            }
+            if (currentState.currentNum != null) {
+                currentState.ops.push('x');
+                currentState.nums.push(currentState.currentNum);
+                currentState.currentNum = null
+            }
+            currentState.ops.push('(');
+            // currentNum is now null in all cases, and we have pushed a parens into the ops list.
         }
         else {
-            console.log('Cannot use an operation with a null number');
-            return;
+            if (currentState.currentNum == null) {
+                if (currentState.ops[currentState.ops.length-1] == '.') {
+                    currentState.currentNum == 0;
+                }
+                else {
+                    console.log('Cannot end a parenthesis with an operator');
+                    return;
+                }
+            }
+            // Will not log a null because we returned or set it to zero
+            currentState.nums.push(currentState.currentNum);
+            currentState.ops.push(')');
+            currentState.currentNum = null;
+            DisplayText(stateList);
         }
     }
-
-    currentState.nums.push(currentState.currentNum);
-    currentState.ops.push(event.target.textContent);
-    currentState.currentNum = null;
-
-    DisplayText(stateList);
 }
 
 /**
@@ -124,6 +166,8 @@ function ClickedPlusMinus(event, currentState) {
  */
 
 function ClickedLParen(event, stateList) {
+    ClickedOp(event, currentState);
+    /*
     let blank = {
         currentNum: null,
         nums: [],
@@ -131,6 +175,7 @@ function ClickedLParen(event, stateList) {
     };
     stateList.push(blank);
     DisplayText(stateList);
+    */
 }
 
 /**
@@ -142,11 +187,14 @@ function ClickedLParen(event, stateList) {
  * @returns 
  */
 
-function ClickedRParen(event, stateList) {
+function ClickedRParen(event, currentState) {
+    ClickedOp(event, currentState);
+    /*
     let temp = stateList.splice(stateList.length-1, 1);
     console.log(temp);
     stateList[stateList.length-1].nums.push(temp);
     DisplayText(stateList);
+    */
 }
 
 function ClickedEquals(event, currentState, stateList) {
@@ -154,7 +202,24 @@ function ClickedEquals(event, currentState, stateList) {
     return;
 }
 
-function DisplayText(stateList) {
+
+// nums list will always be the same or shorter than the ops list. This is true because we only push numbers to the nums list 
+// when an operator is added to the list at the same time
+// Thus we can loop over the number list, and ensure that we never access past the end of the ops list
+// Parenthesis will be added to the ops list, so these will make the list longer.
+// An open parens will always come after an operator, either the operator press, or the implied multiplication
+// A close parens will always come after a number
+function DisplayText(state) {
+    let temp = '';
+
+    
+    let opsCopy = [...state.ops];
+
+
+
+//
+
+    /*
     let temp = '';
     console.log(stateList);
     // Display everything in the stateList
@@ -181,6 +246,7 @@ function DisplayText(stateList) {
         temp += ')';
     }
     screen.textContent = temp;
+    */
 }
 
 //DOM elements
